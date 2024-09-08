@@ -3,6 +3,4 @@ export type Action<T =any >={
     payload?: T;
 } ;
 
-
-
 export type ActionCreator<T= undefined>=(...args:any)=>Action;

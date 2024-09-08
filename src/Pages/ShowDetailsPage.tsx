@@ -21,19 +21,16 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({
   params,
   show,
   loadShow,
-  ShowDeatil,
-  LoadCast,
+  showDetail,
+  loadCast,
   showCast,
-  showloading,
-  castloading,
+  showLoading,
+  castLoading,
 }) => {
-  console.log(params.showId);
-  console.log("show cast", showCast);
-  console.log(show, "show from ");
   useEffect(() => {
     loadShow(+params.showId);
-    LoadCast(+params.showId);
-  }, [params.showId]);
+    loadCast(+params.showId);
+  }, [params.showId, loadShow, loadCast]);
 
   if (!show) {
     return (
@@ -42,32 +39,36 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({
       </div>
     );
   }
-  
+
+  const { name, genres, summary, image, rating } = show;
+
   return (
     <div className="mt-2">
       <Link className="flex items-center text-xl" to="/">
         <IoArrowBack />
         Back
       </Link>
-      <h2 className="text-4xl font-semibold tracking-wide">{show.name}</h2>
+      <h2 className="text-4xl font-semibold tracking-wide">{name}</h2>
       <div className="flex space-x-3 my-2 bg-gray-300 p-2 rounded-sm">
-        {show.genres.map((genre:any) => (
+        {genres.map((genre: string) => (
           <GenrePill name={genre} key={genre} />
         ))}
       </div>
       <div className="mt-2 flex">
         <img
-          src={show.image?.medium || pleaceHolderImage}
-          alt=""
+          src={image?.medium || pleaceHolderImage}
+          alt={name || "Show image"}
           className="object-cover object-center w-full rounded-t-md h-72"
         />
         <div className="ml-2">
-          {show.summary && (
-            <p dangerouslySetInnerHTML={{ __html: show.summary || "" }}></p>
+          {summary && (
+            <p dangerouslySetInnerHTML={{ __html: summary }}></p>
           )}
           <p className="mt-2 text-lg font-bold border border-gray-700 rounded-md px-2 py-1 max-w-max">
             Rating:{" "}
-            <span className="text-gray-700">{show.rating.average || <span>NO</span>}/10</span>
+            <span className="text-gray-700">
+              {rating?.average ? rating.average : "N/A"}/10
+            </span>
           </p>
         </div>
       </div>
@@ -76,12 +77,18 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({
         <h4 className="text-2xl font-semibold tracking-wide">Cast</h4>
 
         <div className="flex flex-wrap">
-          {castloading ? (<LoadingSpinner/>) : (
+          {castLoading ? (
+            <LoadingSpinner />
+          ) : (
             <div className="flex flex-row flex-wrap gap-2">
               {showCast &&
-                showCast.map((item) => {
-                  return <CastCard avatarLink={item.image?.medium || pleaceHolderImage} name={item.name || ""}/>;
-                })}
+                showCast.map((item) => (
+                  <CastCard
+                    key={item.id} // Ensure key is unique
+                    avatarLink={item.image?.medium || pleaceHolderImage}
+                    name={item.name || ""}
+                  />
+                ))}
             </div>
           )}
         </div>
@@ -90,21 +97,17 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({
   );
 };
 
-const mapStateToProps = (state: State, ownProps: OwnProps) => {
-  return {
-    show: showsSelector(state)[+ownProps.params.showId],
-    showCast: allCastSelector(state),
-    castloading: castLoadingSelector(state),
-    showloading: castLoadingSelector(state),
-  };
-
-  // console.log(ownProps.params.showId);
-};
+const mapStateToProps = (state: State, ownProps: OwnProps) => ({
+  show: showsSelector(state)[+ownProps.params.showId],
+  showCast: allCastSelector(state),
+  castLoading: castLoadingSelector(state),
+  showLoading: castLoadingSelector(state), // Separate selector can be created if needed
+});
 
 const mapDispatchToProps = {
   loadShow: loadShowAction,
-  ShowDeatil: showDetailsAction,
-  LoadCast: loadCastShowDetailsAction,
+  showDetail: showDetailsAction, // Renamed for consistency
+  loadCast: loadCastShowDetailsAction,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

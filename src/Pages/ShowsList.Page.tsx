@@ -1,4 +1,4 @@
-import { ChangeEvent, FC } from "react";
+import { ChangeEvent, FC, useState, useEffect } from "react";
 import SearchBar from "../Components/SearchBar";
 import ShowCard from "../Components/ShowCard";
 import { ShowsQueryChangeAction } from "../actions/Show";
@@ -10,7 +10,6 @@ import {
   ShowSelector,
   showsLoadingSelector,
 } from "../selector/show";
-import ShowCast from "../Components/ShowCast";
 import LoadingSpinner from "../Components/LoadingSpinner";
 
 type ShowListPageProps = ReduxProps;
@@ -20,29 +19,40 @@ const ShowListPage: FC<ShowListPageProps> = ({
   shows,
   QueryChange,
   loading,
-  showCast,
 }) => {
-  console.log("shows", shows);
+  const [searchTerm, setSearchTerm] = useState(query);
+
+  // Debounce input to avoid frequent API calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      QueryChange(searchTerm);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, QueryChange]);
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
   return (
     <div className="mt-2">
-      <SearchBar
-        value={query}
-        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          QueryChange(e.target.value)
-        }
-      />
-      {loading && <LoadingSpinner className="text-md" />}
+      <SearchBar value={searchTerm} onChange={handleInputChange} />
 
-      {shows && (
+      {loading ? (
+        <LoadingSpinner className="text-md" />
+      ) : shows.length === 0 ? (
+        <div className="text-center text-lg mt-4">No shows found</div>
+      ) : (
         <div className="flex flex-wrap justify-center">
           {shows.map((item) => (
-            <ShowCard key={item.id} show={item}></ShowCard>
+            <ShowCard key={item.id} show={item} />
           ))}
         </div>
       )}
     </div>
   );
 };
+
 const mapStateToProps = (state: State) => {
   return {
     query: showQuerySelector(state),
@@ -51,8 +61,8 @@ const mapStateToProps = (state: State) => {
     showCast: showMapCast(state),
   };
 };
+
 const mapDispatchToProps = {
-  // showsLoaded: ShowsLoadedAction,
   QueryChange: ShowsQueryChangeAction,
 };
 

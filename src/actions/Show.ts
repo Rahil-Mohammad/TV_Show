@@ -5,11 +5,7 @@ import { Show } from "../models/show";
 
  
  export const SHOWS_LOADED = "SHOWS_LOADED";
- 
-//  export const ShowsLoadedAction : ActionCreator<Show[]> =(shows:Show[])=>({
-//    type:SHOWS_LOADED,
-//    payload:shows,
-//  });
+
 export const ShowsLoadedAction:ActionCreator<{show:Show[],cast:{[id:number]:Cast[]}}>=(show:Show[],cast:{[id:number]:Cast[]})=>({
   type:SHOWS_LOADED,
   payload:{show,cast}
